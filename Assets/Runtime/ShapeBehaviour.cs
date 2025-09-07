@@ -1,8 +1,7 @@
 using UnityEngine;
 using System.Linq;
-
-#if UNITY_EDITOR
 using UnityEditor;
+using System.Collections;
 
 [CustomEditor(typeof(ShapeBehaviour)), CanEditMultipleObjects]
 public class ShapeBehaviourEditor : Editor
@@ -13,21 +12,29 @@ public class ShapeBehaviourEditor : Editor
         
         using (new EditorGUILayout.HorizontalScope())
         {
-            if (GUILayout.Button("Select all shapes"))
+            if (GUILayout.Button("Select all cubes"))
             {
-                var allShapeBehaviour = GameObject.FindObjectsOfType
-                <ShapeBehaviour>();
-                var allShapeGameObjects = allShapeBehaviour
+                var allCubeBehaviour = GameObject.FindGameObjectsWithTag("Cube");
+                var allCubeGameObjects = allCubeBehaviour
                 .Select(shape => shape.gameObject)
                 .ToArray();
-                Selection.objects = allShapeGameObjects;
+                Selection.objects = allCubeGameObjects;
+            }
+
+            if (GUILayout.Button("Select all spheres"))
+            {
+                var allSphereBehaviour = GameObject.FindGameObjectsWithTag("Sphere");
+                var allSphereGameObjects = allSphereBehaviour
+                .Select(shape => shape.gameObject)
+                .ToArray();
+                Selection.objects = allSphereGameObjects;
             }
 
             if (GUILayout.Button("Clear Selection"))
             {
                 Selection.objects = new Object[] 
                 {
-                    (target as ShapeBehaviour).gameObject
+                    GameObject.FindWithTag("Shape Controller")
                 };
             }
 
@@ -40,23 +47,24 @@ public class ShapeBehaviourEditor : Editor
                 {
                 shape.gameObject.SetActive(!shape.gameObject.activeSelf);
                 }
-                GUI.backgroundColor = Color.red;
             }
         GUI.backgroundColor = cachedColor;
+
+
+        serializedObject.Update();
+
+        var Size = serializedObject.FindProperty("Size");
+        if (Size.floatValue < 0)
+        {
+            EditorGUILayout.HelpBox("Shapes cannot be smaller than 0!", MessageType.Warning);
+        }
+
+        serializedObject.ApplyModifiedProperties();
     }
 }
-#endif
 
 public class ShapeBehaviour : MonoBehaviour
 {
-    public class CubeBehaviour
-    {
-        int size;
-
-    }
-
-    public class SphereBehaviour
-    {
-        int size;
-    }
+    [SerializeField]
+    float Size;
 }
